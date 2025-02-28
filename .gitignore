@@ -1,2 +1,5 @@
 # MacOS filesystem
 .DS_Store
+
+# IntelliJ IDEA
+.idea

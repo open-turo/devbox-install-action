@@ -10,7 +10,7 @@ inputs:
     default: '.'
   enable-cache: # 'true' or 'false'
     description: 'Caching the entire Nix store in github based on your devbox.json'
-    default: 'false'
+    default: 'true'
   refresh-cli: # 'true' or 'false'
     description: 'Specify whether the CLI should be redownloaded'
     default: 'false'
@@ -25,7 +25,24 @@ inputs:
   skip-nix-installation: # 'true' or 'false'
     description: 'Skip the installation of nix'
     default: 'false'
-
+  use-fallback: # 'true' or 'false'
+    description: 'Use the fallback cache if the S3 bucket cache fails'
+    default: 'true'
+  s3-bucket-name:
+    required: false
+    description: 'S3 bucket name in which to cache'
+  aws-region:
+    required: false
+    description: 'AWS region'
+  aws-access-key-id:
+    description: 'AWS access key ID'
+    required: false
+  aws-secret-access-key:
+    description: 'AWS secret access key'
+    required: false
+  aws-session-token:
+    description: 'AWS session token - required when using role'
+    required: false
 runs:
   using: "composite"
   steps:
@@ -53,10 +70,16 @@ runs:
     - name: Mount devbox cli cache
       if: inputs.refresh-cli == 'false'
       id: cache-devbox-cli
-      uses: actions/cache/restore@v4
+      uses: tespkg/actions-cache/restore@v1
       with:
         path: ~/.local/bin/devbox
         key: ${{ runner.os }}-${{ runner.arch }}-devbox-cli-${{ env.latest_version }}
+        use-fallback: ${{ inputs.use-fallback }}
+        bucket: ${{ inputs.s3-bucket-name }}
+        region: ${{ inputs.aws-region }}
+        accessKey: ${{ inputs.aws-access-key-id }}
+        secretKey: ${{ inputs.aws-secret-access-key }}
+        sessionToken: ${{ inputs.aws-session-token }}
 
     - name: Install devbox cli
       if: steps.cache-devbox-cli.outputs.cache-hit != 'true'
@@ -102,10 +125,16 @@ runs:
 
     - name: Save devbox cli cache
       if: inputs.refresh-cli == 'false' && steps.cache-devbox-cli.outputs.cache-hit != 'true'
-      uses: actions/cache/save@v4
+      uses: tespkg/actions-cache/save@v1
       with:
         path: ~/.local/bin/devbox
         key: ${{ runner.os }}-${{ runner.arch }}-devbox-cli-${{ env.latest_version }}
+        use-fallback: ${{ inputs.use-fallback }}
+        bucket: ${{ inputs.s3-bucket-name }}
+        region: ${{ inputs.aws-region }}
+        accessKey: ${{ inputs.aws-access-key-id }}
+        secretKey: ${{ inputs.aws-secret-access-key }}
+        sessionToken: ${{ inputs.aws-session-token }}
 
     - name: Workaround nix store cache permission issue
       if: inputs.enable-cache == 'true'
@@ -149,7 +178,7 @@ runs:
     - name: Mount nix store cache
       id: cache-devbox-nix-store
       if: inputs.enable-cache == 'true'
-      uses: actions/cache/restore@v4
+      uses: tespkg/actions-cache/restore@v1
       with:
         path: |
           ~/.cache/devbox
@@ -160,6 +189,13 @@ runs:
           /nix/store
           /nix/var/nix
         key: ${{ runner.os }}-${{ runner.arch }}-devbox-nix-store-${{ env.nix_version }}-${{ hashFiles(format('{0}/devbox.lock', inputs.project-path)) }}
+        use-fallback: ${{ inputs.use-fallback }}
+        bucket: ${{ inputs.s3-bucket-name }}
+        region: ${{ inputs.aws-region }}
+        accessKey: ${{ inputs.aws-access-key-id }}
+        secretKey: ${{ inputs.aws-secret-access-key }}
+        sessionToken: ${{ inputs.aws-session-token }}
+        restore-keys: ${{ runner.os }}-${{ runner.arch }}-devbox-nix-store-${{ env.nix_version }}-
 
     - name: Install devbox packages
       shell: bash
@@ -177,7 +213,7 @@ runs:
 
     - name: Save nix store cache
       if: inputs.enable-cache == 'true' && steps.cache-devbox-nix-store.outputs.cache-hit != 'true'
-      uses: actions/cache/save@v4
+      uses: tespkg/actions-cache/save@v1
       with:
         path: |
           ~/.cache/devbox
@@ -188,6 +224,12 @@ runs:
           /nix/store
           /nix/var/nix
         key: ${{ runner.os }}-${{ runner.arch }}-devbox-nix-store-${{ env.nix_version }}-${{ hashFiles(format('{0}/devbox.lock', inputs.project-path)) }}
+        use-fallback: ${{ inputs.use-fallback }}
+        bucket: ${{ inputs.s3-bucket-name }}
+        region: ${{ inputs.aws-region }}
+        accessKey: ${{ inputs.aws-access-key-id }}
+        secretKey: ${{ inputs.aws-secret-access-key }}
+        sessionToken: ${{ inputs.aws-session-token }}
 
     - name: Restore tar command
       if: inputs.enable-cache == 'true'
