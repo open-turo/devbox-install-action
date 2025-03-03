@@ -25,7 +25,7 @@ inputs:
   skip-nix-installation: # 'true' or 'false'
     description: 'Skip the installation of nix'
     default: 'false'
-  use-fallback: # 'true' or 'false'
+  use-fallback-cache: # 'true' or 'false'
     description: 'Use the fallback cache if the S3 bucket cache fails'
     default: 'true'
   s3-bucket-name:
@@ -74,7 +74,7 @@ runs:
       with:
         path: ~/.local/bin/devbox
         key: ${{ runner.os }}-${{ runner.arch }}-devbox-cli-${{ env.latest_version }}
-        use-fallback: ${{ inputs.use-fallback }}
+        use-fallback: ${{ inputs.use-fallback-cache }}
         bucket: ${{ inputs.s3-bucket-name }}
         region: ${{ inputs.aws-region }}
         accessKey: ${{ inputs.aws-access-key-id }}
@@ -129,7 +129,7 @@ runs:
       with:
         path: ~/.local/bin/devbox
         key: ${{ runner.os }}-${{ runner.arch }}-devbox-cli-${{ env.latest_version }}
-        use-fallback: ${{ inputs.use-fallback }}
+        use-fallback: ${{ inputs.use-fallback-cache }}
         bucket: ${{ inputs.s3-bucket-name }}
         region: ${{ inputs.aws-region }}
         accessKey: ${{ inputs.aws-access-key-id }}
@@ -189,7 +189,7 @@ runs:
           /nix/store
           /nix/var/nix
         key: ${{ runner.os }}-${{ runner.arch }}-devbox-nix-store-${{ env.nix_version }}-${{ hashFiles(format('{0}/devbox.lock', inputs.project-path)) }}
-        use-fallback: ${{ inputs.use-fallback }}
+        use-fallback: ${{ inputs.use-fallback-cache }}
         bucket: ${{ inputs.s3-bucket-name }}
         region: ${{ inputs.aws-region }}
         accessKey: ${{ inputs.aws-access-key-id }}
@@ -224,7 +224,7 @@ runs:
           /nix/store
           /nix/var/nix
         key: ${{ runner.os }}-${{ runner.arch }}-devbox-nix-store-${{ env.nix_version }}-${{ hashFiles(format('{0}/devbox.lock', inputs.project-path)) }}
-        use-fallback: ${{ inputs.use-fallback }}
+        use-fallback: ${{ inputs.use-fallback-cache }}
         bucket: ${{ inputs.s3-bucket-name }}
         region: ${{ inputs.aws-region }}
         accessKey: ${{ inputs.aws-access-key-id }}
