@@ -29,7 +29,7 @@ inputs:
     description: 'Use the fallback cache if the S3 bucket cache fails'
     default: 'true'
   s3-bucket-name:
-    required: false
+    default: 'replace-me'
     description: 'S3 bucket name in which to cache'
   aws-region:
     required: false
